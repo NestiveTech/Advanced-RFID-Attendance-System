@@ -1,0 +1,1373 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>RFID Attendance System - Enterprise Dashboard</title>
+  
+  <!-- Google OAuth -->
+  <script src="https://accounts.google.com/gsi/client" async defer></script>
+  
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap');
+    
+    :root {
+      --gold-primary: #FFD700;
+      --gold-secondary: #FDB931;
+      --bg-primary: #0a0a0a;
+      --bg-card: #1a1a1a;
+      --text-primary: #ffffff;
+      --text-secondary: #b0b0b0;
+      --success: #00ff88;
+      --error: #ff3366;
+      --border-gold: rgba(255, 215, 0, 0.2);
+      --glow-gold: 0 0 20px rgba(255, 215, 0, 0.4);
+      --shadow-lg: 0 8px 32px rgba(0, 0, 0, 0.5);
+    }
+    
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    
+    body {
+      font-family: 'Inter', sans-serif;
+      background: var(--bg-primary);
+      color: var(--text-primary);
+      line-height: 1.6;
+      min-height: 100vh;
+    }
+    
+    ::-webkit-scrollbar { width: 10px; }
+    ::-webkit-scrollbar-track { background: var(--bg-primary); }
+    ::-webkit-scrollbar-thumb {
+      background: linear-gradient(180deg, var(--gold-primary), var(--gold-secondary));
+      border-radius: 5px;
+      box-shadow: var(--glow-gold);
+    }
+    
+    #loadingOverlay {
+      display: none;
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: rgba(10, 10, 10, 0.98);
+      z-index: 9999;
+      justify-content: center;
+      align-items: center;
+      flex-direction: column;
+      backdrop-filter: blur(10px);
+    }
+    
+    #loadingOverlay.active { display: flex; }
+    
+    .loading-spinner {
+      width: 80px;
+      height: 80px;
+      border: 5px solid rgba(255, 215, 0, 0.1);
+      border-top: 5px solid var(--gold-primary);
+      border-radius: 50%;
+      animation: spin 1.2s linear infinite;
+      box-shadow: var(--glow-gold);
+    }
+    
+    @keyframes spin {
+      0% { transform: rotate(0deg); }
+      100% { transform: rotate(360deg); }
+    }
+    
+    .loading-text {
+      color: var(--gold-primary);
+      margin-top: 30px;
+      font-size: 20px;
+      font-weight: 600;
+      text-shadow: var(--glow-gold);
+    }
+    
+    #loginModal {
+      display: flex;
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: var(--bg-primary);
+      z-index: 1000;
+      justify-content: center;
+      align-items: center;
+      padding: 20px;
+    }
+    
+    #loginModal.hidden { display: none; }
+    
+    .login-container {
+      background: var(--bg-card);
+      padding: 60px 50px;
+      border-radius: 24px;
+      box-shadow: var(--shadow-lg), 0 0 0 1px var(--border-gold);
+      max-width: 500px;
+      width: 100%;
+      border: 1px solid var(--border-gold);
+    }
+    
+    .login-header {
+      text-align: center;
+      margin-bottom: 50px;
+    }
+    
+    .login-logo {
+      font-size: 100px;
+      margin-bottom: 25px;
+      text-shadow: var(--glow-gold);
+      animation: float 4s ease-in-out infinite;
+    }
+    
+    @keyframes float {
+      0%, 100% { transform: translateY(0px); }
+      50% { transform: translateY(-15px); }
+    }
+    
+    .login-header h1 {
+      color: var(--gold-primary);
+      font-size: 36px;
+      margin-bottom: 12px;
+      font-weight: 800;
+      text-shadow: var(--glow-gold);
+    }
+    
+    .login-header p {
+      color: var(--text-secondary);
+      font-size: 16px;
+      font-weight: 500;
+    }
+    
+    #dashboardContainer {
+      display: none;
+      max-width: 1800px;
+      margin: 0 auto;
+      padding: 40px 30px;
+    }
+    
+    #dashboardContainer.active {
+      display: block;
+      animation: fadeIn 0.6s ease;
+    }
+    
+    @keyframes fadeIn {
+      from { opacity: 0; }
+      to { opacity: 1; }
+    }
+    
+    .header {
+      background: var(--bg-card);
+      border-radius: 20px;
+      padding: 35px 45px;
+      margin-bottom: 35px;
+      box-shadow: var(--shadow-lg), 0 0 0 1px var(--border-gold);
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      flex-wrap: wrap;
+      gap: 25px;
+      border: 1px solid var(--border-gold);
+    }
+    
+    .header-title h1 {
+      color: var(--gold-primary);
+      font-size: 32px;
+      margin-bottom: 8px;
+      font-weight: 800;
+      text-shadow: var(--glow-gold);
+      display: flex;
+      align-items: center;
+      gap: 15px;
+    }
+    
+    .header-title p {
+      color: var(--text-secondary);
+      font-size: 15px;
+      font-weight: 500;
+    }
+    
+    .header-user {
+      display: flex;
+      align-items: center;
+      gap: 25px;
+    }
+    
+    .user-avatar {
+      width: 60px;
+      height: 60px;
+      border-radius: 50%;
+      object-fit: cover;
+      border: 3px solid var(--gold-primary);
+      box-shadow: var(--glow-gold);
+      transition: all 0.3s ease;
+    }
+    
+    .user-avatar:hover {
+      transform: scale(1.1) rotate(5deg);
+    }
+    
+    .user-name {
+      font-weight: 700;
+      color: var(--text-primary);
+      font-size: 17px;
+    }
+    
+    .user-email {
+      font-size: 14px;
+      color: var(--text-secondary);
+    }
+    
+    .tabs {
+      display: flex;
+      gap: 15px;
+      margin-bottom: 35px;
+      background: var(--bg-card);
+      padding: 25px;
+      border-radius: 20px;
+      box-shadow: var(--shadow-lg), 0 0 0 1px var(--border-gold);
+      overflow-x: auto;
+      border: 1px solid var(--border-gold);
+    }
+    
+    .tab-btn {
+      background: transparent;
+      border: 2px solid var(--border-gold);
+      padding: 16px 32px;
+      border-radius: 12px;
+      cursor: pointer;
+      font-size: 15px;
+      font-weight: 700;
+      color: var(--text-secondary);
+      transition: all 0.4s ease;
+      white-space: nowrap;
+    }
+    
+    .tab-btn:hover {
+      background: rgba(255, 215, 0, 0.05);
+      color: var(--gold-primary);
+      border-color: var(--gold-primary);
+      transform: translateY(-3px);
+      box-shadow: var(--glow-gold);
+    }
+    
+    .tab-btn.active {
+      background: linear-gradient(135deg, var(--gold-primary), var(--gold-secondary));
+      color: var(--bg-primary);
+      border-color: transparent;
+      box-shadow: var(--glow-gold);
+      transform: translateY(-3px) scale(1.05);
+    }
+    
+    .tab-content {
+      display: none;
+      animation: fadeInUp 0.5s ease;
+    }
+    
+    .tab-content.active { display: block; }
+    
+    @keyframes fadeInUp {
+      from {
+        opacity: 0;
+        transform: translateY(30px);
+      }
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+    
+    .card {
+      background: var(--bg-card);
+      border-radius: 20px;
+      padding: 35px;
+      box-shadow: var(--shadow-lg), 0 0 0 1px var(--border-gold);
+      margin-bottom: 30px;
+      border: 1px solid var(--border-gold);
+      transition: all 0.4s ease;
+    }
+    
+    .card:hover {
+      transform: translateY(-5px);
+      border-color: var(--gold-primary);
+    }
+    
+    .card-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 30px;
+      padding-bottom: 25px;
+      border-bottom: 2px solid var(--border-gold);
+    }
+    
+    .card-title {
+      font-size: 24px;
+      font-weight: 800;
+      color: var(--gold-primary);
+      text-shadow: var(--glow-gold);
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+    
+    .stats-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+      gap: 30px;
+      margin-bottom: 35px;
+    }
+    
+    .stat-card {
+      background: var(--bg-card);
+      border-radius: 20px;
+      padding: 35px;
+      box-shadow: var(--shadow-lg), 0 0 0 1px var(--border-gold);
+      display: flex;
+      align-items: center;
+      gap: 25px;
+      transition: all 0.5s ease;
+      border: 1px solid var(--border-gold);
+    }
+    
+    .stat-card:hover {
+      transform: translateY(-8px) scale(1.02);
+      box-shadow: var(--shadow-lg), 0 0 0 1px var(--gold-primary), var(--glow-gold);
+      border-color: var(--gold-primary);
+    }
+    
+    .stat-icon {
+      width: 80px;
+      height: 80px;
+      border-radius: 18px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 38px;
+      background: linear-gradient(135deg, rgba(255, 215, 0, 0.15), rgba(255, 215, 0, 0.05));
+      border: 2px solid var(--border-gold);
+      box-shadow: var(--glow-gold);
+      transition: all 0.4s ease;
+    }
+    
+    .stat-card:hover .stat-icon {
+      transform: scale(1.15) rotate(10deg);
+    }
+    
+    .stat-details h3 {
+      font-size: 42px;
+      font-weight: 900;
+      color: var(--gold-primary);
+      margin-bottom: 8px;
+      text-shadow: var(--glow-gold);
+    }
+    
+    .stat-details p {
+      color: var(--text-secondary);
+      font-size: 15px;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+    
+    .btn {
+      padding: 16px 32px;
+      border: none;
+      border-radius: 12px;
+      font-size: 15px;
+      font-weight: 700;
+      cursor: pointer;
+      transition: all 0.4s ease;
+      display: inline-flex;
+      align-items: center;
+      gap: 10px;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+    
+    .btn-primary {
+      background: linear-gradient(135deg, var(--gold-primary), var(--gold-secondary));
+      color: var(--bg-primary);
+      box-shadow: var(--glow-gold);
+    }
+    
+    .btn-primary:hover {
+      box-shadow: 0 0 40px rgba(255, 215, 0, 0.7);
+      transform: translateY(-4px) scale(1.05);
+    }
+    
+    .btn-success {
+      background: linear-gradient(135deg, var(--success), #00cc66);
+      color: var(--bg-primary);
+      box-shadow: 0 0 20px rgba(0, 255, 136, 0.4);
+    }
+    
+    .btn-danger {
+      background: linear-gradient(135deg, var(--error), #ff0044);
+      color: white;
+      box-shadow: 0 0 20px rgba(255, 51, 102, 0.4);
+    }
+    
+    .btn-outline {
+      background: transparent;
+      border: 2px solid var(--gold-primary);
+      color: var(--gold-primary);
+    }
+    
+    .form-group {
+      margin-bottom: 28px;
+    }
+    
+    .form-group label {
+      display: block;
+      margin-bottom: 12px;
+      font-weight: 700;
+      color: var(--text-primary);
+      font-size: 14px;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+    
+    .form-group input,
+    .form-group select {
+      width: 100%;
+      padding: 16px 20px;
+      background: rgba(255, 255, 255, 0.03);
+      border: 2px solid var(--border-gold);
+      border-radius: 12px;
+      font-size: 15px;
+      color: var(--text-primary);
+      transition: all 0.3s ease;
+      font-family: 'Inter', sans-serif;
+    }
+    
+    .form-group input:focus,
+    .form-group select:focus {
+      outline: none;
+      border-color: var(--gold-primary);
+      background: rgba(255, 215, 0, 0.05);
+      box-shadow: var(--glow-gold);
+    }
+    
+    .table-container {
+      overflow-x: auto;
+      border-radius: 12px;
+    }
+    
+    table {
+      width: 100%;
+      border-collapse: separate;
+      border-spacing: 0;
+    }
+    
+    table thead {
+      background: linear-gradient(135deg, rgba(255, 215, 0, 0.15), rgba(255, 215, 0, 0.05));
+      position: sticky;
+      top: 0;
+      z-index: 10;
+    }
+    
+    table th {
+      padding: 20px;
+      text-align: left;
+      font-weight: 800;
+      color: var(--gold-primary);
+      border-bottom: 3px solid var(--gold-primary);
+      font-size: 13px;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+      text-shadow: var(--glow-gold);
+    }
+    
+    table td {
+      padding: 20px;
+      border-bottom: 1px solid var(--border-gold);
+      color: var(--text-primary);
+      font-size: 14px;
+    }
+    
+    table tbody tr {
+      transition: all 0.3s ease;
+      background: transparent;
+    }
+    
+    table tbody tr:hover {
+      background: rgba(255, 215, 0, 0.05);
+      box-shadow: inset 0 0 0 1px rgba(255, 215, 0, 0.4);
+    }
+    
+    .modal {
+      display: none;
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: rgba(10, 10, 10, 0.97);
+      z-index: 2000;
+      justify-content: center;
+      align-items: center;
+      padding: 20px;
+      overflow-y: auto;
+      backdrop-filter: blur(10px);
+    }
+    
+    .modal.active {
+      display: flex;
+      animation: fadeIn 0.3s ease;
+    }
+    
+    .modal-content {
+      background: var(--bg-card);
+      border-radius: 24px;
+      padding: 45px;
+      max-width: 750px;
+      width: 100%;
+      max-height: 90vh;
+      overflow-y: auto;
+      position: relative;
+      box-shadow: var(--shadow-lg), 0 0 0 1px var(--border-gold);
+      border: 1px solid var(--border-gold);
+    }
+    
+    .modal-content h2 {
+      color: var(--gold-primary);
+      margin-bottom: 35px;
+      font-size: 28px;
+      font-weight: 800;
+      text-shadow: var(--glow-gold);
+    }
+    
+    .close {
+      position: absolute;
+      top: 25px;
+      right: 30px;
+      font-size: 36px;
+      font-weight: bold;
+      color: var(--text-secondary);
+      cursor: pointer;
+      transition: all 0.3s ease;
+      width: 45px;
+      height: 45px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      border-radius: 50%;
+    }
+    
+    .close:hover {
+      color: var(--gold-primary);
+      background: rgba(255, 215, 0, 0.1);
+      transform: rotate(90deg) scale(1.1);
+      box-shadow: var(--glow-gold);
+    }
+    
+    .alert {
+      padding: 20px 28px;
+      border-radius: 12px;
+      margin-bottom: 28px;
+      font-size: 14px;
+      font-weight: 600;
+      border-left: 5px solid;
+    }
+    
+    .alert-success {
+      background: rgba(0, 255, 136, 0.1);
+      color: var(--success);
+      border-color: var(--success);
+      box-shadow: 0 0 20px rgba(0, 255, 136, 0.2);
+    }
+    
+    .alert-error {
+      background: rgba(255, 51, 102, 0.1);
+      color: var(--error);
+      border-color: var(--error);
+      box-shadow: 0 0 20px rgba(255, 51, 102, 0.2);
+    }
+    
+    .status-badge {
+      display: inline-block;
+      padding: 8px 18px;
+      border-radius: 25px;
+      font-size: 12px;
+      font-weight: 800;
+      text-transform: uppercase;
+      letter-spacing: 0.8px;
+    }
+    
+    .status-active {
+      background: rgba(0, 255, 136, 0.15);
+      color: var(--success);
+      border: 2px solid var(--success);
+      box-shadow: 0 0 15px rgba(0, 255, 136, 0.3);
+    }
+    
+    .status-pending {
+      background: rgba(255, 170, 0, 0.15);
+      color: #ffaa00;
+      border: 2px solid #ffaa00;
+      box-shadow: 0 0 15px rgba(255, 170, 0, 0.3);
+    }
+    
+    .status-offline {
+      background: rgba(255, 51, 102, 0.15);
+      color: var(--error);
+      border: 2px solid var(--error);
+      box-shadow: 0 0 15px rgba(255, 51, 102, 0.3);
+    }
+    
+    .divider-text {
+      text-align: center;
+      position: relative;
+      margin: 40px 0;
+      color: var(--text-secondary);
+      font-weight: 700;
+      font-size: 12px;
+      text-transform: uppercase;
+      letter-spacing: 2px;
+    }
+    
+    @media (max-width: 768px) {
+      .header {
+        flex-direction: column;
+        text-align: center;
+        padding: 25px 30px;
+      }
+      
+      .stats-grid {
+        grid-template-columns: 1fr;
+      }
+      
+      .tabs {
+        flex-direction: column;
+      }
+      
+      .tab-btn {
+        width: 100%;
+        justify-content: center;
+      }
+    }
+  </style>
+</head>
+<body>
+
+  <div id="loadingOverlay">
+    <div class="loading-spinner"></div>
+    <div class="loading-text">Processing...</div>
+  </div>
+
+  <div id="loginModal">
+    <div class="login-container">
+      <div class="login-header">
+        <div class="login-logo">🎯</div>
+        <h1>RFID Attendance System</h1>
+        <p>Enterprise Multi-Tenant Platform</p>
+      </div>
+      
+      <div class="login-content">
+        <div style="display: flex; justify-content: center; margin-bottom: 30px;">
+          <div id="g_id_onload"
+               data-client_id="13894732581-pnq197pe2pvptno4b6pq3nqjefmvacfd.apps.googleusercontent.com"
+               data-context="signin"
+               data-ux_mode="popup"
+               data-callback="handleGoogleSignIn"
+               data-auto_prompt="false">
+          </div>
+          
+          <div class="g_id_signin"
+               data-type="standard"
+               data-shape="rectangular"
+               data-theme="filled_black"
+               data-text="signin_with"
+               data-size="large"
+               data-logo_alignment="left"
+               data-width="380">
+          </div>
+        </div>
+        
+        <div class="divider-text">OR CONTINUE WITH EMAIL</div>
+        
+        <form id="loginForm" onsubmit="handleEmailLogin(event)">
+          <div class="form-group">
+            <label for="loginEmail">Email Address</label>
+            <input type="email" id="loginEmail" placeholder="your@email.com" required>
+          </div>
+          
+          <div class="form-group">
+            <label for="loginName">Full Name</label>
+            <input type="text" id="loginName" placeholder="John Doe" required>
+          </div>
+          
+          <div id="loginAlert"></div>
+          
+          <button type="submit" class="btn btn-primary" style="width: 100%; justify-content: center;">
+            Continue →
+          </button>
+        </form>
+      </div>
+    </div>
+  </div>
+
+  <div id="dashboardContainer">
+    <div class="header">
+      <div class="header-title">
+        <h1>🎯 RFID Attendance Dashboard</h1>
+        <p>Manage devices, employees, and attendance tracking</p>
+      </div>
+      
+      <div class="header-user">
+        <img id="userAvatar" class="user-avatar" src="" alt="User">
+        <div class="user-info">
+          <div class="user-name" id="userName"></div>
+          <div class="user-email" id="userEmail"></div>
+        </div>
+        <button class="btn btn-danger" onclick="logout()">Logout</button>
+      </div>
+    </div>
+
+    <div class="tabs">
+      <button class="tab-btn active" onclick="switchTab('overview')">📊 Overview</button>
+      <button class="tab-btn" onclick="switchTab('devices')">📱 Devices</button>
+      <button class="tab-btn" onclick="switchTab('employees')">👥 Employees</button>
+      <button class="tab-btn" onclick="switchTab('attendance')">📋 Attendance</button>
+      <button class="tab-btn" onclick="switchTab('settings')">⚙️ Settings</button>
+    </div>
+
+    <div id="overviewTab" class="tab-content active">
+      <div class="stats-grid">
+        <div class="stat-card">
+          <div class="stat-icon">📱</div>
+          <div class="stat-details">
+            <h3 id="statDevices">0</h3>
+            <p>Active Devices</p>
+          </div>
+        </div>
+        
+        <div class="stat-card">
+          <div class="stat-icon">👥</div>
+          <div class="stat-details">
+            <h3 id="statEmployees">0</h3>
+            <p>Total Employees</p>
+          </div>
+        </div>
+        
+        <div class="stat-card">
+          <div class="stat-icon">📋</div>
+          <div class="stat-details">
+            <h3 id="statAttendance">0</h3>
+            <p>Today's Attendance</p>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div id="devicesTab" class="tab-content">
+      <div class="card">
+        <div class="card-header">
+          <h2 class="card-title">📱 Device Management</h2>
+          <button class="btn btn-primary" onclick="openApproveDeviceModal()">➕ Add Device</button>
+        </div>
+        
+        <div class="table-container">
+          <table id="devicesTable">
+            <thead>
+              <tr>
+                <th>Device ID</th>
+                <th>Location</th>
+                <th>Status</th>
+                <th>Last Seen</th>
+                <th>Actions</th>
+              </tr>
+            </thead>
+            <tbody id="devicesTableBody">
+              <tr><td colspan="5" style="text-align: center; padding: 40px;">Loading devices...</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+    <div id="employeesTab" class="tab-content">
+      <div class="card">
+        <div class="card-header">
+          <h2 class="card-title">👥 Employee Management</h2>
+          <button class="btn btn-primary" onclick="openRegisterEmployeeModal()">➕ Add Employee</button>
+        </div>
+        
+        <div class="table-container">
+          <table id="employeesTable">
+            <thead>
+              <tr>
+                <th>Employee ID</th>
+                <th>Name</th>
+                <th>Email</th>
+                <th>Department</th>
+                <th>RFID</th>
+                <th>Status</th>
+                <th>Actions</th>
+              </tr>
+            </thead>
+            <tbody id="employeesTableBody">
+              <tr><td colspan="7" style="text-align: center; padding: 40px;">Loading employees...</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+    <div id="attendanceTab" class="tab-content">
+      <div class="card">
+        <div class="card-header">
+          <h2 class="card-title">📋 Attendance Logs</h2>
+          <button class="btn btn-primary" onclick="loadAttendanceLogs()">🔄 Refresh</button>
+        </div>
+        
+        <div class="table-container">
+          <table id="attendanceTable">
+            <thead>
+              <tr>
+                <th>Date</th>
+                <th>Time</th>
+                <th>Employee</th>
+                <th>Type</th>
+                <th>Device</th>
+              </tr>
+            </thead>
+            <tbody id="attendanceTableBody">
+              <tr><td colspan="5" style="text-align: center; padding: 40px;">Loading attendance...</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+    <div id="settingsTab" class="tab-content">
+      <div class="card">
+        <div class="card-header">
+          <h2 class="card-title">⚙️ System Settings</h2>
+        </div>
+        
+        <div class="form-group">
+          <label>Spreadsheet URL</label>
+          <input type="text" id="sheetUrl" readonly>
+        </div>
+        
+        <div class="form-group">
+          <label>Tenant ID</label>
+          <input type="text" id="tenantId" readonly>
+        </div>
+        
+        <button class="btn btn-primary" onclick="window.open(document.getElementById('sheetUrl').value, '_blank')">
+          📊 Open Spreadsheet
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Approve Device Modal -->
+  <div id="approveDeviceModal" class="modal">
+    <div class="modal-content">
+      <span class="close" onclick="closeApproveDeviceModal()">&times;</span>
+      <h2>📱 Approve Device</h2>
+      
+      <div id="deviceAlert"></div>
+      
+      <form id="approveDeviceForm" onsubmit="approveDevice(event)">
+        <div class="form-group">
+          <label>Device ID</label>
+          <input type="text" id="deviceIdInput" placeholder="ESP32-XXXXXXXX" required>
+        </div>
+        
+        <div class="form-group">
+          <label>Location</label>
+          <input type="text" id="deviceLocation" placeholder="e.g., Main Entrance" required>
+        </div>
+        
+        <button type="submit" class="btn btn-primary" style="width: 100%; justify-content: center;">
+          ✅ Approve Device
+        </button>
+      </form>
+    </div>
+  </div>
+
+  <!-- Register Employee Modal -->
+  <div id="registerEmployeeModal" class="modal">
+    <div class="modal-content">
+      <span class="close" onclick="closeRegisterEmployeeModal()">&times;</span>
+      <h2>👤 Register Employee</h2>
+      
+      <div id="employeeAlert"></div>
+      
+      <form id="registerEmployeeForm" onsubmit="registerEmployee(event)">
+        <div class="form-group">
+          <label>Full Name</label>
+          <input type="text" id="employeeName" placeholder="John Doe" required>
+        </div>
+        
+        <div class="form-group">
+          <label>Email</label>
+          <input type="email" id="employeeEmail" placeholder="john@company.com">
+        </div>
+        
+        <div class="form-group">
+          <label>Department</label>
+          <input type="text" id="employeeDepartment" placeholder="Engineering">
+        </div>
+        
+        <div class="form-group">
+          <label>RFID UID (Optional)</label>
+          <input type="text" id="employeeRfidUid" placeholder="Scan card or leave empty">
+        </div>
+        
+        <button type="submit" class="btn btn-primary" style="width: 100%; justify-content: center;">
+          ✅ Register Employee
+        </button>
+      </form>
+    </div>
+  </div>
+
+  <script>
+    const API_ENDPOINT = 'https://script.google.com/macros/s/AKfycbw76bDnTASZHJLQqZmEFnWJ_wB4b6gFeEwFuUR41N8W29jig5aGvVKe6uQv0uuBu4m5/exec';
+    let currentUser = null;
+    let currentTab = 'overview';
+
+    // ═══════════════════════════════════════════════════════════════════
+    // AUTHENTICATION
+    // ═══════════════════════════════════════════════════════════════════
+
+    function handleGoogleSignIn(response) {
+      showLoading();
+      const credential = response.credential;
+      const payload = JSON.parse(atob(credential.split('.')[1]));
+      
+      loginUser(payload.email, payload.name, payload.picture);
+    }
+
+    async function handleEmailLogin(e) {
+      e.preventDefault();
+      showLoading();
+      
+      const email = document.getElementById('loginEmail').value;
+      const name = document.getElementById('loginName').value;
+      
+      loginUser(email, name, '');
+    }
+
+    async function loginUser(email, name, picture) {
+      try {
+        const res = await fetch(API_ENDPOINT, {
+          method: 'POST',
+          headers: {'Content-Type': 'application/json'},
+          body: JSON.stringify({
+            action: 'oauth_login',
+            email: email,
+            name: name,
+            picture: picture
+          })
+        });
+        
+        const result = await res.json();
+        hideLoading();
+        
+        if (result.status === 'success') {
+          currentUser = result;
+          localStorage.setItem('rfid_user', JSON.stringify(result));
+          showDashboard();
+        } else {
+          showAlert('loginAlert', 'error', result.message);
+        }
+      } catch (error) {
+        hideLoading();
+        showAlert('loginAlert', 'error', 'Login failed. Please try again.');
+      }
+    }
+
+    function showDashboard() {
+      document.getElementById('loginModal').classList.add('hidden');
+      document.getElementById('dashboardContainer').classList.add('active');
+      
+      document.getElementById('userName').textContent = currentUser.name;
+      document.getElementById('userEmail').textContent = currentUser.email;
+      document.getElementById('userAvatar').src = currentUser.picture || 'https://via.placeholder.com/60';
+      document.getElementById('sheetUrl').value = currentUser.sheet_url;
+      document.getElementById('tenantId').value = currentUser.tenant_id;
+      
+      loadOverviewData();
+      loadDevices();
+      loadEmployees();
+      loadAttendanceLogs();
+    }
+
+    function logout() {
+      localStorage.removeItem('rfid_user');
+      location.reload();
+    }
+
+    // ═══════════════════════════════════════════════════════════════════
+    // TAB SWITCHING
+    // ═══════════════════════════════════════════════════════════════════
+
+    function switchTab(tabName) {
+      document.querySelectorAll('.tab-btn').forEach(btn => btn.classList.remove('active'));
+      document.querySelectorAll('.tab-content').forEach(content => content.classList.remove('active'));
+      
+      event.target.classList.add('active');
+      document.getElementById(tabName + 'Tab').classList.add('active');
+      currentTab = tabName;
+    }
+
+    // ═══════════════════════════════════════════════════════════════════
+    // DATA LOADING
+    // ═══════════════════════════════════════════════════════════════════
+
+    async function loadOverviewData() {
+      const devices = await loadDevices();
+      const employees = await loadEmployees();
+      const attendance = await loadAttendanceLogs();
+      
+      document.getElementById('statDevices').textContent = devices.filter(d => d.approved).length;
+      document.getElementById('statEmployees').textContent = employees.length;
+      
+      const today = new Date().toISOString().split('T')[0];
+      const todayAttendance = attendance.filter(a => a.date === today);
+      document.getElementById('statAttendance').textContent = todayAttendance.length;
+    }
+
+    async function loadDevices() {
+      try {
+        const res = await fetch(API_ENDPOINT, {
+          method: 'POST',
+          headers: {'Content-Type': 'application/json'},
+          body: JSON.stringify({
+            action: 'get_tenant_devices',
+            tenant_id: currentUser.tenant_id
+          })
+        });
+        
+        const result = await res.json();
+        
+        if (result.status === 'success') {
+          const tbody = document.getElementById('devicesTableBody');
+          
+          if (result.devices.length === 0) {
+            tbody.innerHTML = '<tr><td colspan="5" style="text-align: center; padding: 40px;">No devices found</td></tr>';
+          } else {
+            tbody.innerHTML = result.devices.map(device => `
+              <tr>
+                <td><strong>${device.device_id}</strong></td>
+                <td>${device.location || 'Not assigned'}</td>
+                <td>
+                  <span class="status-badge ${device.approved ? 'status-active' : 'status-pending'}">
+                    ${device.approved ? 'Active' : 'Pending'}
+                  </span>
+                </td>
+                <td>${new Date(device.last_seen).toLocaleString()}</td>
+                <td>
+                  ${device.approved ? 
+                    `<button class="btn btn-danger btn-small" onclick="deleteDevice('${device.device_id}')">Delete</button>` :
+                    `<button class="btn btn-primary btn-small" onclick="quickApproveDevice('${device.device_id}')">Approve</button>`
+                  }
+                </td>
+              </tr>
+            `).join('');
+          }
+          
+          return result.devices;
+        }
+      } catch (error) {
+        console.error('Error loading devices:', error);
+      }
+      return [];
+    }
+
+    async function loadEmployees() {
+      try {
+        const res = await fetch(API_ENDPOINT, {
+          method: 'POST',
+          headers: {'Content-Type': 'application/json'},
+          body: JSON.stringify({
+            action: 'get_employees',
+            tenant_id: currentUser.tenant_id
+          })
+        });
+        
+        const result = await res.json();
+        
+        if (result.status === 'success') {
+          const tbody = document.getElementById('employeesTableBody');
+          
+          if (result.employees.length === 0) {
+            tbody.innerHTML = '<tr><td colspan="7" style="text-align: center; padding: 40px;">No employees found</td></tr>';
+          } else {
+            tbody.innerHTML = result.employees.map(emp => `
+              <tr>
+                <td><strong>${emp.employee_id}</strong></td>
+                <td>${emp.name}</td>
+                <td>${emp.email || 'N/A'}</td>
+                <td>${emp.department || 'N/A'}</td>
+                <td>${emp.rfid_uid || 'Not assigned'}</td>
+                <td><span class="status-badge status-active">${emp.status}</span></td>
+                <td>
+                  <button class="btn btn-danger btn-small" onclick="deleteEmployee('${emp.employee_id}')">Delete</button>
+                </td>
+              </tr>
+            `).join('');
+          }
+          
+          return result.employees;
+        }
+      } catch (error) {
+        console.error('Error loading employees:', error);
+      }
+      return [];
+    }
+
+    async function loadAttendanceLogs() {
+      try {
+        const res = await fetch(API_ENDPOINT, {
+          method: 'POST',
+          headers: {'Content-Type': 'application/json'},
+          body: JSON.stringify({
+            action: 'get_attendance_logs',
+            tenant_id: currentUser.tenant_id,
+            limit: 100
+          })
+        });
+        
+        const result = await res.json();
+        
+        if (result.status === 'success') {
+          const tbody = document.getElementById('attendanceTableBody');
+          
+          if (result.logs.length === 0) {
+            tbody.innerHTML = '<tr><td colspan="5" style="text-align: center; padding: 40px;">No attendance logs found</td></tr>';
+          } else {
+            tbody.innerHTML = result.logs.map(log => `
+              <tr>
+                <td>${log.date}</td>
+                <td>${log.time}</td>
+                <td><strong>${log.employee_name}</strong></td>
+                <td>
+                  <span class="status-badge ${log.attendance_type === 'check-in' ? 'status-active' : 'status-pending'}">
+                    ${log.attendance_type}
+                  </span>
+                </td>
+                <td>${log.device_id}</td>
+              </tr>
+            `).join('');
+          }
+          
+          return result.logs;
+        }
+      } catch (error) {
+        console.error('Error loading attendance:', error);
+      }
+      return [];
+    }
+
+    // ═══════════════════════════════════════════════════════════════════
+    // DEVICE MANAGEMENT
+    // ═══════════════════════════════════════════════════════════════════
+
+    function openApproveDeviceModal() {
+      document.getElementById('approveDeviceModal').classList.add('active');
+    }
+
+    function closeApproveDeviceModal() {
+      document.getElementById('approveDeviceModal').classList.remove('active');
+      document.getElementById('approveDeviceForm').reset();
+    }
+
+    async function approveDevice(e) {
+      e.preventDefault();
+      showLoading();
+      
+      const deviceId = document.getElementById('deviceIdInput').value;
+      const location = document.getElementById('deviceLocation').value;
+      
+      try {
+        const res = await fetch(API_ENDPOINT, {
+          method: 'POST',
+          headers: {'Content-Type': 'application/json'},
+          body: JSON.stringify({
+            action: 'approve_device',
+            tenant_id: currentUser.tenant_id,
+            device_id: deviceId,
+            location: location
+          })
+        });
+        
+        const result = await res.json();
+        hideLoading();
+        
+        if (result.status === 'success') {
+          showAlert('deviceAlert', 'success', '✅ Device approved successfully!');
+          setTimeout(() => {
+            closeApproveDeviceModal();
+            loadDevices();
+          }, 2000);
+        } else {
+          showAlert('deviceAlert', 'error', result.message);
+        }
+      } catch (error) {
+        hideLoading();
+        showAlert('deviceAlert', 'error', 'Failed to approve device');
+      }
+    }
+
+    async function deleteDevice(deviceId) {
+      if (!confirm('Delete this device?')) return;
+      
+      showLoading();
+      
+      try {
+        const res = await fetch(API_ENDPOINT, {
+          method: 'POST',
+          headers: {'Content-Type': 'application/json'},
+          body: JSON.stringify({
+            action: 'delete_device',
+            tenant_id: currentUser.tenant_id,
+            device_id: deviceId
+          })
+        });
+        
+        const result = await res.json();
+        hideLoading();
+        
+        if (result.status === 'success') {
+          loadDevices();
+        }
+      } catch (error) {
+        hideLoading();
+      }
+    }
+
+    // ═══════════════════════════════════════════════════════════════════
+    // EMPLOYEE MANAGEMENT
+    // ═══════════════════════════════════════════════════════════════════
+
+    function openRegisterEmployeeModal() {
+      document.getElementById('registerEmployeeModal').classList.add('active');
+    }
+
+    function closeRegisterEmployeeModal() {
+      document.getElementById('registerEmployeeModal').classList.remove('active');
+      document.getElementById('registerEmployeeForm').reset();
+    }
+
+    async function registerEmployee(e) {
+      e.preventDefault();
+      showLoading();
+      
+      const name = document.getElementById('employeeName').value;
+      const email = document.getElementById('employeeEmail').value;
+      const department = document.getElementById('employeeDepartment').value;
+      const rfidUid = document.getElementById('employeeRfidUid').value;
+      
+      try {
+        const res = await fetch(API_ENDPOINT, {
+          method: 'POST',
+          headers: {'Content-Type': 'application/json'},
+          body: JSON.stringify({
+            action: 'register_employee',
+            tenant_id: currentUser.tenant_id,
+            employee_name: name,
+            employee_email: email,
+            department: department,
+            rfid_uid: rfidUid
+          })
+        });
+        
+        const result = await res.json();
+        hideLoading();
+        
+        if (result.status === 'success') {
+          showAlert('employeeAlert', 'success', '✅ Employee registered successfully!');
+          
+          if (rfidUid) {
+            await fetch(API_ENDPOINT, {
+              method: 'POST',
+              headers: {'Content-Type': 'application/json'},
+              body: JSON.stringify({
+                action: 'bind_rfid_to_employee',
+                tenant_id: currentUser.tenant_id,
+                rfid_uid: rfidUid,
+                employee_id: result.employee_id
+              })
+            });
+          }
+          
+          setTimeout(() => {
+            closeRegisterEmployeeModal();
+            loadEmployees();
+          }, 2000);
+        } else {
+          showAlert('employeeAlert', 'error', result.message);
+        }
+      } catch (error) {
+        hideLoading();
+        showAlert('employeeAlert', 'error', 'Failed to register employee');
+      }
+    }
+
+    async function deleteEmployee(employeeId) {
+      if (!confirm('Delete this employee?')) return;
+      
+      showLoading();
+      
+      try {
+        const res = await fetch(API_ENDPOINT, {
+          method: 'POST',
+          headers: {'Content-Type': 'application/json'},
+          body: JSON.stringify({
+            action: 'delete_employee',
+            tenant_id: currentUser.tenant_id,
+            employee_id: employeeId
+          })
+        });
+        
+        const result = await res.json();
+        hideLoading();
+        
+        if (result.status === 'success') {
+          loadEmployees();
+        }
+      } catch (error) {
+        hideLoading();
+      }
+    }
+
+    // ═══════════════════════════════════════════════════════════════════
+    // UTILITIES
+    // ═══════════════════════════════════════════════════════════════════
+
+    function showLoading() {
+      document.getElementById('loadingOverlay').classList.add('active');
+    }
+
+    function hideLoading() {
+      document.getElementById('loadingOverlay').classList.remove('active');
+    }
+
+    function showAlert(elementId, type, message) {
+      const alert = document.getElementById(elementId);
+      alert.className = 'alert alert-' + type;
+      alert.textContent = message;
+      alert.style.display = 'block';
+    }
+
+    // ═══════════════════════════════════════════════════════════════════
+    // INITIALIZATION
+    // ═══════════════════════════════════════════════════════════════════
+
+    window.addEventListener('DOMContentLoaded', () => {
+      const savedUser = localStorage.getItem('rfid_user');
+      if (savedUser) {
+        currentUser = JSON.parse(savedUser);
+        showDashboard();
+      }
+    });
+  </script>
+</body>
+</html>
