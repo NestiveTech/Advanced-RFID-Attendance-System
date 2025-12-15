@@ -3,1240 +3,385 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>RFID Attendance System - Dashboard</title>
+    <title>RFID Attendance System</title>
     <style>
         * {
             margin: 0;
             padding: 0;
             box-sizing: border-box;
         }
-
-        :root {
-            --primary-color: #4A90E2;
-            --secondary-color: #2C3E50;
-            --success-color: #27AE60;
-            --danger-color: #E74C3C;
-            --warning-color: #F39C12;
-            --info-color: #3498DB;
-            --background: #F5F7FA;
-            --card-bg: #FFFFFF;
-            --text-primary: #2C3E50;
-            --text-secondary: #7F8C8D;
-            --border-color: #E1E8ED;
-            --shadow: 0 2px 10px rgba(0,0,0,0.08);
-        }
-
+        
         body {
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            background: var(--background);
-            color: var(--text-primary);
-            line-height: 1.6;
-        }
-
-        /* LOGIN SCREEN */
-
-        .login-container {
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            min-height: 100vh;
-            padding: 20px;
             background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-        }
-
-        .login-card {
-            background: var(--card-bg);
-            padding: 50px 40px;
-            border-radius: 16px;
-            box-shadow: 0 10px 40px rgba(0,0,0,0.3);
-            max-width: 450px;
-            width: 100%;
-            text-align: center;
-            animation: slideUp 0.5s ease-out;
-        }
-
-        @keyframes slideUp {
-            from {
-                opacity: 0;
-                transform: translateY(30px);
-            }
-            to {
-                opacity: 1;
-                transform: translateY(0);
-            }
-        }
-
-        .login-card .logo {
-            font-size: 64px;
-            margin-bottom: 20px;
-        }
-
-        .login-card h1 {
-            color: var(--primary-color);
-            margin-bottom: 10px;
-            font-size: 32px;
-            font-weight: 700;
-        }
-
-        .login-card p {
-            color: var(--text-secondary);
-            margin-bottom: 40px;
-            font-size: 16px;
-        }
-
-        .google-signin-btn {
-            width: 100%;
+            min-height: 100vh;
             display: flex;
             justify-content: center;
-            margin: 20px 0;
-        }
-
-        .login-footer {
-            margin-top: 30px;
-            font-size: 13px;
-            color: var(--text-secondary);
-        }
-
-        .btn-link {
-            background: none;
-            border: none;
-            color: var(--primary-color);
-            cursor: pointer;
-            font-weight: 600;
-            font-size: 14px;
-            text-decoration: underline;
-            padding: 5px 10px;
-            transition: all 0.3s;
-        }
-
-        .btn-link:hover {
-            color: #357ABD;
-            transform: scale(1.05);
-        }
-
-        /* MAIN DASHBOARD */
-
-        .dashboard {
-            display: none;
-        }
-
-        .header {
-            background: var(--card-bg);
-            border-bottom: 1px solid var(--border-color);
-            padding: 20px 40px;
-            display: flex;
-            justify-content: space-between;
             align-items: center;
-            box-shadow: var(--shadow);
-            position: sticky;
-            top: 0;
-            z-index: 100;
+            padding: 20px;
         }
-
-        .header-left {
-            display: flex;
-            align-items: center;
-            gap: 15px;
-        }
-
-        .header-left .logo {
-            font-size: 32px;
-        }
-
-        .header-left h1 {
-            color: var(--primary-color);
-            font-size: 24px;
-            margin-bottom: 3px;
-        }
-
-        .header-left p {
-            color: var(--text-secondary);
-            font-size: 13px;
-        }
-
-        .header-right {
-            display: flex;
-            align-items: center;
-            gap: 25px;
-        }
-
-        .user-info {
-            text-align: right;
-        }
-
-        .user-info strong {
-            display: block;
-            color: var(--text-primary);
-            font-size: 15px;
-        }
-
-        .user-info small {
-            color: var(--text-secondary);
-            font-size: 13px;
-        }
-
-        .btn-logout {
-            background: var(--danger-color);
-            color: white;
-            border: none;
-            padding: 10px 25px;
-            border-radius: 8px;
-            cursor: pointer;
-            font-weight: 600;
-            font-size: 14px;
-            transition: all 0.3s;
-        }
-
-        .btn-logout:hover {
-            background: #C0392B;
-            transform: translateY(-2px);
-            box-shadow: 0 4px 12px rgba(231, 76, 60, 0.3);
-        }
-
+        
         .container {
-            max-width: 1400px;
-            margin: 40px auto;
-            padding: 0 40px;
+            background: white;
+            border-radius: 20px;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+            padding: 40px;
+            max-width: 500px;
+            width: 100%;
         }
-
-        /* STAT CARDS */
-
-        .stats-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
-            gap: 25px;
-            margin-bottom: 40px;
+        
+        h1 {
+            color: #667eea;
+            text-align: center;
+            margin-bottom: 30px;
+            font-size: 28px;
         }
-
-        .stat-card {
-            background: var(--card-bg);
-            padding: 30px;
-            border-radius: 12px;
-            box-shadow: var(--shadow);
-            border-left: 5px solid var(--primary-color);
-            transition: all 0.3s;
-            cursor: pointer;
-        }
-
-        .stat-card:hover {
-            transform: translateY(-5px);
-            box-shadow: 0 8px 20px rgba(0,0,0,0.12);
-        }
-
-        .stat-card.devices { border-left-color: var(--info-color); }
-        .stat-card.employees { border-left-color: var(--success-color); }
-        .stat-card.attendance { border-left-color: var(--warning-color); }
-        .stat-card.pending { border-left-color: var(--danger-color); }
-
-        .stat-card h3 {
-            font-size: 13px;
-            color: var(--text-secondary);
-            text-transform: uppercase;
-            letter-spacing: 1.2px;
-            margin-bottom: 15px;
-            font-weight: 600;
-        }
-
-        .stat-card .value {
-            font-size: 48px;
-            font-weight: 700;
-            color: var(--primary-color);
-            line-height: 1;
-            margin-bottom: 10px;
-        }
-
-        .stat-card.devices .value { color: var(--info-color); }
-        .stat-card.employees .value { color: var(--success-color); }
-        .stat-card.attendance .value { color: var(--warning-color); }
-        .stat-card.pending .value { color: var(--danger-color); }
-
-        .stat-card .label {
-            font-size: 14px;
-            color: var(--text-secondary);
-        }
-
-        /* TABS */
-
+        
         .tabs {
             display: flex;
-            gap: 5px;
             margin-bottom: 30px;
-            border-bottom: 2px solid var(--border-color);
-            overflow-x: auto;
+            border-bottom: 2px solid #e0e0e0;
         }
-
-        .tab-btn {
+        
+        .tab {
+            flex: 1;
+            padding: 15px;
+            text-align: center;
+            cursor: pointer;
             background: none;
             border: none;
-            padding: 18px 30px;
-            cursor: pointer;
-            font-size: 15px;
-            font-weight: 600;
-            color: var(--text-secondary);
-            border-bottom: 3px solid transparent;
+            font-size: 16px;
+            color: #666;
             transition: all 0.3s;
-            white-space: nowrap;
         }
-
-        .tab-btn:hover {
-            color: var(--primary-color);
-            background: rgba(74, 144, 226, 0.05);
+        
+        .tab.active {
+            color: #667eea;
+            border-bottom: 3px solid #667eea;
+            font-weight: bold;
         }
-
-        .tab-btn.active {
-            color: var(--primary-color);
-            border-bottom-color: var(--primary-color);
-        }
-
+        
         .tab-content {
             display: none;
-            animation: fadeIn 0.3s ease-in;
         }
-
+        
         .tab-content.active {
             display: block;
+            animation: fadeIn 0.3s;
         }
-
+        
         @keyframes fadeIn {
-            from { opacity: 0; }
-            to { opacity: 1; }
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
         }
-
-        /* CARDS & TABLES */
-
-        .card {
-            background: var(--card-bg);
-            border-radius: 12px;
-            padding: 35px;
-            box-shadow: var(--shadow);
-            margin-bottom: 30px;
+        
+        .form-group {
+            margin-bottom: 20px;
         }
-
-        .card-header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-bottom: 25px;
+        
+        label {
+            display: block;
+            margin-bottom: 8px;
+            color: #333;
+            font-weight: 500;
         }
-
-        .card h2 {
-            color: var(--text-primary);
-            font-size: 22px;
-            font-weight: 600;
-        }
-
-        table {
+        
+        input {
             width: 100%;
-            border-collapse: collapse;
+            padding: 12px;
+            border: 2px solid #e0e0e0;
+            border-radius: 8px;
+            font-size: 14px;
+            transition: border-color 0.3s;
+        }
+        
+        input:focus {
+            outline: none;
+            border-color: #667eea;
+        }
+        
+        button[type="submit"] {
+            width: 100%;
+            padding: 15px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            border-radius: 8px;
+            font-size: 16px;
+            font-weight: bold;
+            cursor: pointer;
+            transition: transform 0.2s;
+        }
+        
+        button[type="submit"]:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 20px rgba(102, 126, 234, 0.4);
+        }
+        
+        button[type="submit"]:active {
+            transform: translateY(0);
+        }
+        
+        #message {
+            padding: 15px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+            text-align: center;
+            font-weight: 500;
+            display: none;
+        }
+        
+        .success {
+            background: #d4edda;
+            color: #155724;
+            border: 1px solid #c3e6cb;
+        }
+        
+        .error {
+            background: #f8d7da;
+            color: #721c24;
+            border: 1px solid #f5c6cb;
+        }
+        
+        .info {
+            background: #d1ecf1;
+            color: #0c5460;
+            border: 1px solid #bee5eb;
+        }
+        
+        .dashboard {
             margin-top: 20px;
         }
-
-        table th {
-            background: var(--background);
-            color: var(--text-primary);
-            padding: 16px 15px;
-            text-align: left;
-            font-weight: 700;
-            text-transform: uppercase;
-            font-size: 12px;
-            letter-spacing: 1px;
-            border-bottom: 2px solid var(--border-color);
-        }
-
-        table td {
-            padding: 18px 15px;
-            border-bottom: 1px solid var(--border-color);
-            color: var(--text-primary);
-            font-size: 14px;
-        }
-
-        table tr:hover {
-            background: var(--background);
-        }
-
-        table tr:last-child td {
-            border-bottom: none;
-        }
-
-        /* BADGES */
-
-        .badge {
-            display: inline-block;
-            padding: 6px 14px;
-            border-radius: 20px;
-            font-size: 12px;
-            font-weight: 700;
-            text-transform: uppercase;
-            letter-spacing: 0.5px;
-        }
-
-        .badge-success {
-            background: #D4EDDA;
-            color: #155724;
-        }
-
-        .badge-danger {
-            background: #F8D7DA;
-            color: #721C24;
-        }
-
-        .badge-warning {
-            background: #FFF3CD;
-            color: #856404;
-        }
-
-        .badge-info {
-            background: #D1ECF1;
-            color: #0C5460;
-        }
-
-        .badge-secondary {
-            background: #E2E3E5;
-            color: #383D41;
-        }
-
-        /* BUTTONS */
-
-        .btn {
-            padding: 12px 28px;
-            border: none;
-            border-radius: 8px;
-            cursor: pointer;
-            font-weight: 600;
-            transition: all 0.3s;
-            font-size: 14px;
-            display: inline-flex;
-            align-items: center;
-            gap: 8px;
-        }
-
-        .btn:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 4px 12px rgba(0,0,0,0.15);
-        }
-
-        .btn-primary {
-            background: var(--primary-color);
-            color: white;
-        }
-
-        .btn-primary:hover {
-            background: #357ABD;
-        }
-
-        .btn-success {
-            background: var(--success-color);
-            color: white;
-        }
-
-        .btn-success:hover {
-            background: #229954;
-        }
-
-        .btn-danger {
-            background: var(--danger-color);
-            color: white;
-        }
-
-        .btn-danger:hover {
-            background: #C0392B;
-        }
-
-        .btn-warning {
-            background: var(--warning-color);
-            color: white;
-        }
-
-        .btn-info {
-            background: var(--info-color);
-            color: white;
-        }
-
-        .btn-sm {
-            padding: 8px 16px;
-            font-size: 13px;
-        }
-
-        /* FORMS */
-
-        .form-group {
-            margin-bottom: 25px;
-        }
-
-        .form-group label {
-            display: block;
-            margin-bottom: 10px;
-            font-weight: 600;
-            color: var(--text-primary);
-            font-size: 14px;
-        }
-
-        .form-group input,
-        .form-group select,
-        .form-group textarea {
-            width: 100%;
-            padding: 14px 16px;
-            border: 2px solid var(--border-color);
-            border-radius: 8px;
-            font-size: 14px;
-            transition: all 0.3s;
-            font-family: inherit;
-        }
-
-        .form-group input:focus,
-        .form-group select:focus,
-        .form-group textarea:focus {
-            outline: none;
-            border-color: var(--primary-color);
-            box-shadow: 0 0 0 3px rgba(74, 144, 226, 0.1);
-        }
-
-        .form-group input:disabled {
-            background: var(--background);
-            cursor: not-allowed;
-        }
-
-        /* MODAL */
-
-        .modal {
-            display: none;
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background: rgba(0,0,0,0.6);
-            z-index: 1000;
-            justify-content: center;
-            align-items: center;
-            backdrop-filter: blur(4px);
-        }
-
-        .modal.active {
-            display: flex;
-            animation: fadeIn 0.3s ease-out;
-        }
-
-        .modal-content {
-            background: white;
-            padding: 35px;
-            border-radius: 16px;
-            max-width: 550px;
-            width: 90%;
-            max-height: 90vh;
-            overflow-y: auto;
-            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
-            animation: slideUp 0.3s ease-out;
-        }
-
-        .modal-header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-bottom: 25px;
-            padding-bottom: 20px;
-            border-bottom: 2px solid var(--border-color);
-        }
-
-        .modal-header h2 {
-            margin: 0;
-            font-size: 24px;
-            color: var(--text-primary);
-        }
-
-        .close-modal {
-            background: none;
-            border: none;
-            font-size: 32px;
-            cursor: pointer;
-            color: var(--text-secondary);
-            transition: all 0.3s;
-            width: 40px;
-            height: 40px;
-            border-radius: 50%;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-        }
-
-        .close-modal:hover {
-            background: var(--background);
-            color: var(--danger-color);
-        }
-
-        /* ALERTS */
-
-        .alert {
-            padding: 18px 20px;
+        
+        .stat-card {
+            background: #f8f9fa;
+            padding: 20px;
             border-radius: 10px;
-            margin-bottom: 25px;
-            border-left: 5px solid;
-            font-size: 14px;
-            display: flex;
-            align-items: center;
-            gap: 12px;
+            margin-bottom: 15px;
+            border-left: 4px solid #667eea;
         }
-
-        .alert-success {
-            background: #D4EDDA;
-            color: #155724;
-            border-left-color: #28A745;
-        }
-
-        .alert-error {
-            background: #F8D7DA;
-            color: #721C24;
-            border-left-color: #DC3545;
-        }
-
-        .alert-info {
-            background: #D1ECF1;
-            color: #0C5460;
-            border-left-color: #17A2B8;
-        }
-
-        .alert-warning {
-            background: #FFF3CD;
-            color: #856404;
-            border-left-color: #FFC107;
-        }
-
-        /* LOADING */
-
-        .loading {
-            text-align: center;
-            padding: 60px 20px;
-            color: var(--text-secondary);
-        }
-
-        .spinner {
-            border: 4px solid var(--border-color);
-            border-top: 4px solid var(--primary-color);
-            border-radius: 50%;
-            width: 50px;
-            height: 50px;
-            animation: spin 1s linear infinite;
-            margin: 0 auto 20px;
-        }
-
-        @keyframes spin {
-            0% { transform: rotate(0deg); }
-            100% { transform: rotate(360deg); }
-        }
-
-        /* EMPTY STATE */
-
-        .empty-state {
-            text-align: center;
-            padding: 60px 20px;
-            color: var(--text-secondary);
-        }
-
-        .empty-state .icon {
-            font-size: 64px;
-            margin-bottom: 20px;
-            opacity: 0.5;
-        }
-
-        .empty-state h3 {
-            font-size: 20px;
+        
+        .stat-card h3 {
+            color: #667eea;
             margin-bottom: 10px;
-            color: var(--text-primary);
+            font-size: 18px;
         }
-
-        .empty-state p {
-            font-size: 14px;
-        }
-
-        /* RESPONSIVE */
-
-        @media (max-width: 768px) {
-            .header {
-                flex-direction: column;
-                gap: 20px;
-                padding: 20px;
-            }
-
-            .header-right {
-                width: 100%;
-                flex-direction: column;
-                gap: 15px;
-            }
-
-            .user-info {
-                text-align: center;
-            }
-
-            .btn-logout {
-                width: 100%;
-            }
-
-            .container {
-                padding: 0 20px;
-            }
-
-            .stats-grid {
-                grid-template-columns: 1fr;
-            }
-
-            .tabs {
-                overflow-x: auto;
-            }
-
-            .card {
-                padding: 20px;
-            }
-
-            table {
-                font-size: 12px;
-            }
-
-            table th,
-            table td {
-                padding: 10px 8px;
-            }
+        
+        .stat-card p {
+            color: #666;
+            line-height: 1.6;
         }
     </style>
 </head>
 <body>
-
-    <!-- LOGIN SCREEN -->
-
-    <div id="loginScreen" class="login-container">
-        <div class="login-card">
-            <div class="logo">🔐</div>
-            <h1>RFID Attendance System</h1>
-            <p>Secure, Multi-Tenant SaaS Platform</p>
-
-            <form id="loginForm" onsubmit="return handleLogin(event)">
-                <div class="form-group">
-                    <label>Email Address</label>
-                    <input type="email" name="email" required placeholder="Enter your email">
-                </div>
-                <div class="form-group">
-                    <label>Password</label>
-                    <input type="password" name="password" required placeholder="Enter your password">
-                </div>
-                <button type="submit" class="btn btn-primary" style="width: 100%; margin-bottom: 15px;">
-                    🔐 Login
-                </button>
-            </form>
-
-            <div style="text-align: center; margin: 20px 0;">
-                <span style="color: var(--text-secondary);">Don't have an account?</span>
-                <button class="btn-link" id="showRegisterBtn">
-                    Register here
-                </button>
-            </div>
-
-            <div class="login-footer">
-                <p>By signing in, you agree to our Terms of Service<br>
-                   Production-Ready Commercial Edition v5.0</p>
-            </div>
-        </div>
-    </div>
-
-    <!-- REGISTER SCREEN -->
-
-    <div id="registerScreen" class="login-container" style="display: none;">
-        <div class="login-card">
-            <div class="logo">✨</div>
-            <h1>Create Account</h1>
-            <p>Join the RFID Attendance System</p>
-
-            <form id="registerForm" onsubmit="return handleRegister(event)">
-                <div class="form-group">
-                    <label>Full Name</label>
-                    <input type="text" name="fullname" required placeholder="Enter your full name">
-                </div>
-                <div class="form-group">
-                    <label>Email Address</label>
-                    <input type="email" name="email" required placeholder="Enter your email">
-                </div>
-                <div class="form-group">
-                    <label>Password</label>
-                    <input type="password" name="password" id="registerPassword" required
-                        placeholder="Enter password (min 8 characters)" minlength="8">
-                </div>
-                <div class="form-group">
-                    <label>Confirm Password</label>
-                    <input type="password" name="confirmPassword" id="confirmPassword" required
-                        placeholder="Confirm your password">
-                </div>
-                <div class="form-group">
-                    <label>Organization Name</label>
-                    <input type="text" name="organization" required placeholder="Your company/organization">
-                </div>
-
-                <div style="margin-bottom: 20px;">
-                    <label style="display: flex; align-items: center; gap: 10px; font-size: 14px;">
-                        <input type="checkbox" name="terms" required>
-                        <span>I agree to the Terms of Service and Privacy Policy</span>
-                    </label>
-                </div>
-
-                <button type="submit" class="btn btn-success" style="width: 100%; margin-bottom: 15px;">
-                    ✅ Create Account
-                </button>
-            </form>
-
-            <div style="text-align: center; margin: 20px 0;">
-                <span style="color: var(--text-secondary);">Already have an account?</span>
-                <button class="btn-link" onclick="showLogin()">
-                    Login here
-                </button>
-            </div>
-
-            <div class="login-footer">
-                <p>By creating an account, you agree to our Terms of Service<br>
-                   Production-Ready Commercial Edition v5.0</p>
-            </div>
-        </div>
-    </div>
-
-    <!-- MAIN DASHBOARD -->
-
-    <div id="mainDashboard" class="dashboard">
-        <div class="header">
-            <div class="header-left">
-                <div class="logo">📇</div>
-                <div>
-                    <h1>RFID Attendance System</h1>
-                    <p>Multi-Tenant Platform</p>
-                </div>
-            </div>
-            <div class="header-right">
-                <div class="user-info">
-                    <strong id="userName"></strong>
-                    <small id="userEmail"></small>
-                </div>
-                <button class="btn-logout" onclick="logout()">🚪 Logout</button>
-            </div>
-        </div>
-
-        <div class="container">
-            <div class="stats-grid">
-                <div class="stat-card devices">
-                    <h3>Active Devices</h3>
-                    <div class="value" id="statDevices">0</div>
-                    <div class="label">ESP32 Scanners</div>
-                </div>
-                <div class="stat-card employees">
-                    <h3>Total Employees</h3>
-                    <div class="value" id="statEmployees">0</div>
-                    <div class="label">Registered Users</div>
-                </div>
-                <div class="stat-card attendance">
-                    <h3>Today's Attendance</h3>
-                    <div class="value" id="statAttendance">0</div>
-                    <div class="label">Check-Ins/Outs</div>
-                </div>
-                <div class="stat-card pending">
-                    <h3>Pending RFID Cards</h3>
-                    <div class="value" id="statPendingRFID">0</div>
-                    <div class="label">Awaiting Binding</div>
-                </div>
-            </div>
-
+    <div class="container">
+        <h1>🔐 RFID Attendance System</h1>
+        
+        <div id="message"></div>
+        
+        <div id="auth-section">
             <div class="tabs">
-                <button class="tab-btn active" onclick="switchTab('devices')">
-                    📱 Devices
-                </button>
-                <button class="tab-btn" onclick="switchTab('employees')">
-                    👥 Employees
-                </button>
-                <button class="tab-btn" onclick="switchTab('attendance')">
-                    📋 Attendance
-                </button>
-                <button class="tab-btn" onclick="switchTab('settings')">
-                    ⚙️ Settings
-                </button>
+                <button class="tab active" id="login-tab" onclick="switchTab('login')">Login</button>
+                <button class="tab" id="register-tab" onclick="switchTab('register')">Register</button>
             </div>
-
-            <div id="devicesTab" class="tab-content active">
-                <div class="card">
-                    <div class="card-header">
-                        <h2>📱 Device Management</h2>
-                        <button class="btn btn-primary" onclick="loadDevices()">
-                            🔄 Refresh
-                        </button>
-                    </div>
-                    <div id="devicesList"></div>
-                </div>
-            </div>
-
-            <div id="employeesTab" class="tab-content">
-                <div class="card">
-                    <div class="card-header">
-                        <h2>👥 Employee Management</h2>
-                        <button class="btn btn-success" onclick="showModal('addEmployeeModal')">
-                            ➕ Add Employee
-                        </button>
-                    </div>
-                    <div id="employeesList"></div>
-                </div>
-            </div>
-
-            <div id="attendanceTab" class="tab-content">
-                <div class="card">
-                    <div class="card-header">
-                        <h2>📋 Attendance Logs</h2>
-                        <div style="display: flex; gap: 10px;">
-                            <input type="date" id="attendanceDate" style="padding: 10px; border: 2px solid var(--border-color); border-radius: 8px;">
-                            <button class="btn btn-primary" onclick="loadAttendance()">
-                                🔍 Load
-                            </button>
-                        </div>
-                    </div>
-                    <div id="attendanceList"></div>
-                </div>
-            </div>
-
-            <div id="settingsTab" class="tab-content">
-                <div class="card">
-                    <h2>⚙️ System Settings</h2>
+            
+            <div id="login-content" class="tab-content active">
+                <form id="login-form" onsubmit="handleLogin(event)">
                     <div class="form-group">
-                        <label>Tenant ID</label>
-                        <input type="text" id="tenantIdDisplay" disabled>
+                        <label>Email</label>
+                        <input type="email" id="login-email" required placeholder="your@email.com">
                     </div>
                     <div class="form-group">
-                        <label>Google Spreadsheet URL</label>
-                        <input type="text" id="spreadsheetURL" disabled>
+                        <label>Password</label>
+                        <input type="password" id="login-password" required placeholder="Enter password">
                     </div>
-                    <button class="btn btn-primary" onclick="openSpreadsheet()">
-                        📊 Open Spreadsheet
-                    </button>
+                    <button type="submit">Login</button>
+                </form>
+            </div>
+            
+            <div id="register-content" class="tab-content">
+                <form id="register-form" onsubmit="handleRegister(event)">
+                    <div class="form-group">
+                        <label>Name</label>
+                        <input type="text" id="register-name" required placeholder="Your Name">
+                    </div>
+                    <div class="form-group">
+                        <label>Email</label>
+                        <input type="email" id="register-email" required placeholder="your@email.com">
+                    </div>
+                    <div class="form-group">
+                        <label>Password</label>
+                        <input type="password" id="register-password" required placeholder="Choose password">
+                    </div>
+                    <div class="form-group">
+                        <label>Organization</label>
+                        <input type="text" id="register-organization" required placeholder="Company Name">
+                    </div>
+                    <button type="submit">Register</button>
+                </form>
+            </div>
+        </div>
+        
+        <div id="dashboard-section" style="display:none;">
+            <div class="dashboard">
+                <div class="stat-card">
+                    <h3>Welcome, <span id="user-name"></span>!</h3>
+                    <p><strong>Organization:</strong> <span id="user-org"></span></p>
+                    <p><strong>Tenant ID:</strong> <span id="tenant-id"></span></p>
                 </div>
-
-                <div class="card">
-                    <h2>📖 System Information</h2>
-                    <table>
-                        <tr>
-                            <td><strong>Version</strong></td>
-                            <td>5.0.0 Production</td>
-                        </tr>
-                        <tr>
-                            <td><strong>Architecture</strong></td>
-                            <td>Multi-Tenant SaaS</td>
-                        </tr>
-                        <tr>
-                            <td><strong>Backend</strong></td>
-                            <td>Google Apps Script</td>
-                        </tr>
-                        <tr>
-                            <td><strong>Database</strong></td>
-                            <td>Google Sheets (Per-Tenant)</td>
-                        </tr>
-                        <tr>
-                            <td><strong>Device Support</strong></td>
-                            <td>ESP32 38-pin + MFRC522</td>
-                        </tr>
-                    </table>
+                
+                <div class="stat-card">
+                    <h3>📊 Quick Actions</h3>
+                    <p><a href="#" onclick="openSpreadsheet()">Open Spreadsheet</a></p>
+                    <p><a href="#" onclick="viewDevices()">Manage Devices</a></p>
+                    <p><a href="#" onclick="viewEmployees()">Manage Employees</a></p>
+                    <p><a href="#" onclick="logout()">Logout</a></p>
                 </div>
             </div>
         </div>
     </div>
-
-    <!-- ADD EMPLOYEE MODAL -->
-
-    <div id="addEmployeeModal" class="modal">
-        <div class="modal-content">
-            <div class="modal-header">
-                <h2>➕ Add New Employee</h2>
-                <button class="close-modal" onclick="closeModal('addEmployeeModal')">&times;</button>
-            </div>
-            <form id="addEmployeeForm" onsubmit="return addEmployee(event)">
-                <div class="form-group">
-                    <label>Full Name *</label>
-                    <input type="text" name="name" required placeholder="John Doe">
-                </div>
-                <div class="form-group">
-                    <label>Email</label>
-                    <input type="email" name="email" placeholder="john.doe@company.com">
-                </div>
-                <div class="form-group">
-                    <label>Department</label>
-                    <input type="text" name="department" placeholder="IT Department">
-                </div>
-                <div class="form-group">
-                    <label>Phone</label>
-                    <input type="tel" name="phone" placeholder="+1234567890">
-                </div>
-                <div class="form-group">
-                    <label>Position</label>
-                    <input type="text" name="position" placeholder="Software Engineer">
-                </div>
-                <button type="submit" class="btn btn-success" style="width: 100%;">
-                    ✅ Add Employee
-                </button>
-            </form>
-        </div>
-    </div>
-
-    <!-- JAVASCRIPT -->
 
     <script>
+        // REPLACE WITH YOUR GOOGLE APPS SCRIPT DEPLOYMENT URL
         const API_URL = "https://script.google.com/macros/s/AKfycbxwIK6wvmAp0VU7cO4Od2ZAFf3_F6rTK7d0pb7SOHYwUlNYLLkYu-Kc6qJjf_fwJJ7g/exec";
-
-        let currentUser = null;
-        let tenantId = null;
-        let spreadsheetUrl = null;
-
-        // REGISTER / LOGIN SCREEN TOGGLE
-
-        document.getElementById('showRegisterBtn').addEventListener('click', function() {
-            document.getElementById('loginScreen').style.display = 'none';
-            document.getElementById('registerScreen').style.display = 'flex';
-        });
-
-        function showLogin() {
-            document.getElementById('registerScreen').style.display = 'none';
-            document.getElementById('loginScreen').style.display = 'flex';
+        
+        function switchTab(tab) {
+            document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+            document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
+            
+            document.getElementById(tab + '-tab').classList.add('active');
+            document.getElementById(tab + '-content').classList.add('active');
         }
-
-        // HANDLE REGISTRATION
-
+        
         async function handleRegister(event) {
             event.preventDefault();
-
-            const form = event.target;
-            const formData = new FormData(form);
-
-            const password = formData.get('password');
-            const confirmPassword = formData.get('confirmPassword');
-
-            if (password !== confirmPassword) {
-                alert('❌ Passwords do not match!');
-                return false;
+            
+            const email = document.getElementById('register-email').value.trim();
+            const name = document.getElementById('register-name').value.trim();
+            const password = document.getElementById('register-password').value.trim();
+            const organization = document.getElementById('register-organization').value.trim();
+            
+            if (!email || !name || !password || !organization) {
+                showMessage('All fields are required', 'error');
+                return;
             }
-
-            if (password.length < 8) {
-                alert('❌ Password must be at least 8 characters long!');
-                return false;
-            }
-
-            const submitBtn = form.querySelector('button[type="submit"]');
-            const originalText = submitBtn.innerHTML;
-            submitBtn.innerHTML = '⏳ Creating Account...';
-            submitBtn.disabled = true;
-
+            
+            showMessage('Registering...', 'info');
+            
             try {
                 const response = await fetch(API_URL, {
                     method: 'POST',
-                    headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+                    headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({
                         action: 'register_user',
-                        name: formData.get('fullname'),
-                        email: formData.get('email'),
+                        email: email,
+                        name: name,
                         password: password,
-                        organization: formData.get('organization')
+                        organization: organization
                     })
                 });
-
-                const data = await response.json();
-
-                if (data.status === 'success') {
-                    alert('✅ Account created successfully! Your tenant ID is: ' + data.tenant_id);
-
-                    currentUser = {
-                        email: formData.get('email'),
-                        name: formData.get('fullname')
-                    };
-                    tenantId = data.tenant_id;
-                    spreadsheetUrl = data.sheet_url;
-
-                    localStorage.setItem('tenantId', tenantId);
-                    localStorage.setItem('spreadsheetUrl', spreadsheetUrl);
-                    localStorage.setItem('userEmail', currentUser.email);
-                    localStorage.setItem('userName', currentUser.name);
-
-                    showDashboard();
+                
+                const result = await response.json();
+                
+                if (result.status === 'success') {
+                    showMessage('✅ Registration successful! Please login.', 'success');
+                    document.getElementById('login-tab').click();
+                    document.getElementById('login-email').value = email;
+                    document.getElementById('register-form').reset();
                 } else {
-                    alert('❌ Registration failed: ' + data.message);
+                    showMessage('❌ ' + result.message, 'error');
                 }
             } catch (error) {
+                showMessage('❌ Connection error: ' + error.message, 'error');
                 console.error('Error:', error);
-                alert('❌ Connection error. Please try again.');
-            } finally {
-                submitBtn.innerHTML = originalText;
-                submitBtn.disabled = false;
             }
-
-            return false;
         }
-
-        // HANDLE EMAIL/PASSWORD LOGIN
-
+        
         async function handleLogin(event) {
             event.preventDefault();
-
-            const form = event.target;
-            const formData = new FormData(form);
-
-            const submitBtn = form.querySelector('button[type="submit"]');
-            const originalText = submitBtn.innerHTML;
-            submitBtn.innerHTML = '⏳ Logging in...';
-            submitBtn.disabled = true;
-
+            
+            const email = document.getElementById('login-email').value.trim();
+            const password = document.getElementById('login-password').value.trim();
+            
+            if (!email || !password) {
+                showMessage('Email and password required', 'error');
+                return;
+            }
+            
+            showMessage('Logging in...', 'info');
+            
             try {
                 const response = await fetch(API_URL, {
                     method: 'POST',
-                    headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+                    headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({
                         action: 'login_user',
-                        email: formData.get('email'),
-                        password: formData.get('password')
+                        email: email,
+                        password: password
                     })
                 });
-
-                const data = await response.json();
-
-                if (data.status === 'success') {
-                    currentUser = {
-                        email: data.email,
-                        name: data.name
-                    };
-                    tenantId = data.tenant_id;
-                    spreadsheetUrl = data.sheet_url;
-
-                    localStorage.setItem('tenantId', tenantId);
-                    localStorage.setItem('spreadsheetUrl', spreadsheetUrl);
-                    localStorage.setItem('userEmail', currentUser.email);
-                    localStorage.setItem('userName', currentUser.name);
-
+                
+                const result = await response.json();
+                
+                if (result.status === 'success') {
+                    sessionStorage.setItem('tenant_id', result.tenant_id);
+                    sessionStorage.setItem('user_name', result.name);
+                    sessionStorage.setItem('user_email', result.email);
+                    sessionStorage.setItem('sheet_url', result.sheet_url);
+                    sessionStorage.setItem('organization', result.organization);
+                    
                     showDashboard();
+                    showMessage('✅ Login successful!', 'success');
                 } else {
-                    alert('❌ Login failed: ' + data.message);
+                    showMessage('❌ ' + result.message, 'error');
                 }
             } catch (error) {
+                showMessage('❌ Connection error: ' + error.message, 'error');
                 console.error('Error:', error);
-                alert('❌ Connection error. Please try again.');
-            } finally {
-                submitBtn.innerHTML = originalText;
-                submitBtn.disabled = false;
             }
-
-            return false;
         }
-
-        // EXISTING DASHBOARD FUNCTIONS (SHORTENED STUBS – KEEP YOUR ORIGINAL IMPLEMENTATIONS)
-
+        
         function showDashboard() {
-            document.getElementById('loginScreen').style.display = 'none';
-            document.getElementById('registerScreen').style.display = 'none';
-            document.getElementById('mainDashboard').style.display = 'block';
-
-            document.getElementById('userName').textContent = currentUser.name;
-            document.getElementById('userEmail').textContent = currentUser.email;
-            document.getElementById('tenantIdDisplay').value = tenantId;
-            document.getElementById('spreadsheetURL').value = spreadsheetUrl;
-
-            const dateInput = document.getElementById('attendanceDate');
-            if (dateInput) dateInput.valueAsDate = new Date();
-
-            loadAllData();
+            document.getElementById('auth-section').style.display = 'none';
+            document.getElementById('dashboard-section').style.display = 'block';
+            
+            document.getElementById('user-name').textContent = sessionStorage.getItem('user_name');
+            document.getElementById('user-org').textContent = sessionStorage.getItem('organization');
+            document.getElementById('tenant-id').textContent = sessionStorage.getItem('tenant_id');
         }
-
-        function logout() {
-            if (confirm('Are you sure you want to logout?')) {
-                localStorage.clear();
-                currentUser = null;
-                tenantId = null;
-                document.getElementById('mainDashboard').style.display = 'none';
-                document.getElementById('registerScreen').style.display = 'none';
-                document.getElementById('loginScreen').style.display = 'flex';
-            }
-        }
-
-        function switchTab(tabName) {
-            document.querySelectorAll('.tab-btn').forEach(btn => btn.classList.remove('active'));
-            document.querySelectorAll('.tab-content').forEach(content => content.classList.remove('active'));
-
-            event.target.classList.add('active');
-            document.getElementById(tabName + 'Tab').classList.add('active');
-
-            if (tabName === 'devices') loadDevices();
-            if (tabName === 'employees') loadEmployees();
-            if (tabName === 'attendance') loadAttendance();
-        }
-
-        function showModal(modalId) {
-            document.getElementById(modalId).classList.add('active');
-        }
-
-        function closeModal(modalId) {
-            document.getElementById(modalId).classList.remove('active');
-        }
-
-        async function loadAllData() {
-            showLoading('Loading data...');
-            await Promise.all([
-                loadDevices(),
-                loadEmployees(),
-                loadAttendance()
-            ]);
-            updateStats();
-            hideLoading();
-        }
-
-        // STUBS – REPLACE WITH YOUR EXISTING JS CODE FROM ORIGINAL FILE
-
-        function showLoading(msg) {
-            console.log(msg);
-        }
-
-        function hideLoading() {
-            console.log('hide loading');
-        }
-
-        async function loadDevices() {
-            // your existing implementation here
-        }
-
-        async function loadEmployees() {
-            // your existing implementation here
-        }
-
-        async function loadAttendance() {
-            // your existing implementation here
-        }
-
-        function updateStats() {
-            // your existing implementation here
-        }
-
-        function addEmployee(event) {
-            event.preventDefault();
-            // your existing implementation here
-            return false;
-        }
-
+        
         function openSpreadsheet() {
-            if (spreadsheetUrl) {
-                window.open(spreadsheetUrl, '_blank');
-            } else {
-                alert('Spreadsheet URL not available.');
-            }
+            window.open(sessionStorage.getItem('sheet_url'), '_blank');
         }
-
-        // AUTO LOGIN FROM LOCALSTORAGE
-
-        window.addEventListener('DOMContentLoaded', function() {
-            const savedTenantId = localStorage.getItem('tenantId');
-            const savedUserEmail = localStorage.getItem('userEmail');
-            const savedUserName = localStorage.getItem('userName');
-            const savedSpreadsheetUrl = localStorage.getItem('spreadsheetUrl');
-
-            if (savedTenantId && savedUserEmail) {
-                currentUser = {
-                    email: savedUserEmail,
-                    name: savedUserName
-                };
-                tenantId = savedTenantId;
-                spreadsheetUrl = savedSpreadsheetUrl;
-                showDashboard();
-            }
-        });
+        
+        function viewDevices() {
+            alert('Device management - Coming soon!');
+        }
+        
+        function viewEmployees() {
+            alert('Employee management - Coming soon!');
+        }
+        
+        function logout() {
+            sessionStorage.clear();
+            location.reload();
+        }
+        
+        function showMessage(message, type) {
+            const msgElement = document.getElementById('message');
+            msgElement.textContent = message;
+            msgElement.className = type;
+            msgElement.style.display = 'block';
+            
+            setTimeout(() => {
+                msgElement.style.display = 'none';
+            }, 5000);
+        }
+        
+        // Check if already logged in
+        if (sessionStorage.getItem('tenant_id')) {
+            showDashboard();
+        }
     </script>
 </body>
 </html>
